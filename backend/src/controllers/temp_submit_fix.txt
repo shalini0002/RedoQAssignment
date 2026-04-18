@@ -1,0 +1,12 @@
+        // Update workflow state
+        const updatedContent = updateWorkflowState(content, 'submit', role);
+        
+        const savedContent = await Content.findByIdAndUpdate(
+            req.params.id,
+            { 
+                status: updatedContent.status,
+                isEditable: updatedContent.isEditable,
+                updatedAt: new Date()
+            },
+            { new: true }
+        );

@@ -1,0 +1,30 @@
+# Node modules
+node_modules/
+
+# Env files
+.env
+.env.*
+
+# Logs
+logs
+*.log
+npm-debug.log*
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Build folders
+dist/
+build/
+
+# Vite
+frontend/dist/
+
+# Backend temp
+backend/tmp/
+backend/logs/
+
+# IDE
+.vscode/
+.idea/
