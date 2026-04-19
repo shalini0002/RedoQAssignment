@@ -11,7 +11,9 @@ const app = express();
 
 // 🔥 👉 ADD CORS HERE (VERY IMPORTANT POSITION)
 app.use(cors({
-  origin: ["http://localhost:5173", "http://localhost:5174"], // Allow both possible frontend ports
+  origin: process.env.NODE_ENV === 'production' 
+    ? [process.env.FRONTEND_URL] 
+    : ["http://localhost:5173", "http://localhost:5174"], // Allow both possible frontend ports
   methods: ["GET", "POST", "PUT", "DELETE"],
   credentials: true
 }));
@@ -25,7 +27,7 @@ app.use("/api/content", contentRoutes);
 // 👉 DB connection
 const PORT = process.env.PORT || 5001;
 
-mongoose.connect(process.env.MONGO_URI)
+mongoose.connect(process.env.MONGO_URI || process.env.MONGODB_URI)
   .then(() => {
     console.log("MongoDB Connected");
     app.listen(PORT, () => console.log(`Server running on ${PORT}`));
