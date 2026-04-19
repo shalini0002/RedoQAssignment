@@ -1,0 +1,7 @@
+services:
+  - type: web
+    name: frontend
+    env: static
+    buildCommand: cd frontend && npm run build
+    publishDir: frontend/dist
+    nodeVersion: 22
