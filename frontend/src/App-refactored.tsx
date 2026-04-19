@@ -10,7 +10,6 @@ import {
   submitContent, 
   approveContent, 
   rejectContent,
-  getAvailableActions,
   type Content 
 } from "./api/content";
 import ContentForm from './components/ContentForm';
@@ -178,7 +177,6 @@ function App() {
         {/* Content List */}
         <ContentList
           contents={contents}
-          currentRole={currentRole}
           canSubmit={canSubmit}
           canEdit={canEdit}
           canApprove={canApprove}

@@ -10,7 +10,6 @@ import {
   submitContent, 
   approveContent, 
   rejectContent,
-  getAvailableActions,
   type Content 
 } from "./api/content";
 

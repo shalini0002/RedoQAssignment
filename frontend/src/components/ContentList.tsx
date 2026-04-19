@@ -1,8 +1,7 @@
-import { Content } from "../api/content";
+import type { Content } from "../api/content";
 
 interface ContentListProps {
   contents: Content[];
-  currentRole: string;
   canSubmit: (content: Content) => boolean;
   canEdit: (content: Content) => boolean;
   canApprove: (content: Content) => boolean;
@@ -56,7 +55,6 @@ const WorkflowProgress = ({ status }: { status: string }) => {
 
 const ContentList: React.FC<ContentListProps> = ({
   contents,
-  currentRole,
   canSubmit,
   canEdit,
   canApprove,
