@@ -212,7 +212,7 @@ const getWorkflowProgress = (content) => {
   return steps;
 };
 
-module.exports = {
+export {
   WORKFLOW_STATES,
   USER_ROLES,
   canCreateContent,
