@@ -1,144 +1,42 @@
-# Content Review & Approval System
+# Content Review System
 
-A comprehensive full-stack application demonstrating a content review and approval workflow with role-based access control and proper workflow validation.
+A multi-stage content approval workflow system with role-based permissions and state management.
 
-## Overview
+## Table of Contents
+- [Setup Instructions](#setup-instructions)
+- [Architecture Overview](#architecture-overview)
+- [Workflow Design](#workflow-design)
+- [Database Schema](#database-schema)
+- [Assumptions and Tradeoffs](#assumptions-and-tradeoffs)
+- [Future Scope](#future-scope)
+- [API Documentation](#api-documentation)
+- [Deployment Guide](#deployment-guide)
 
-This system implements a multi-step content approval workflow where content goes through a structured review process before being approved. The system ensures proper validation of workflow transitions and provides clear visibility of content status throughout the approval process.
-
-## Core Features
-
-### Content Management
-- **Content Creation**: Admin and Creator roles can create new content
-- **Content Editing**: Content is editable when in DRAFT or REJECTED status
-- **Content Submission**: Content can be submitted for review when ready
-
-### Approval Workflow
-- **2-Step Approval Process**: 
-  - Review 1: Initial review by Reviewer 1
-  - Review 2: Secondary review by Reviewer 2
-- **Approval Actions**: Each reviewer can approve or reject content
-- **Rejection Handling**: Rejected content becomes editable and must restart the approval process
-- **Final Approval**: Once fully approved, content becomes non-editable
-
-### Role-Based Access Control
-- **Admin**: Can create and edit content
-- **Creator**: Can create and edit content
-- **Reviewer 1**: Can review content in REVIEW_1 status
-- **Reviewer 2**: Can review content in REVIEW_2 status
-
-## Workflow Design Decisions
-
-### 1. Sequential Approval Process
-The system implements a **sequential approval workflow** rather than parallel approval. This ensures:
-- Clear responsibility at each stage
-- Prevents approval conflicts
-- Maintains audit trail of who approved what and when
-
-### 2. Rejection and Resubmission Logic
-When content is rejected:
-- Content status changes to REJECTED
-- Content becomes editable again
-- Approval history is reset
-- Must restart from Review 1 after resubmission
-
-This ensures that rejected content gets proper re-evaluation rather than partial approval.
-
-### 3. Editability Rules
-- **DRAFT**: Fully editable by Admin/Creator
-- **REVIEW_1**: Not editable (under review)
-- **REVIEW_2**: Not editable (under review)
-- **APPROVED**: Not editable (final state)
-- **REJECTED**: Editable (needs updates)
-
-### 4. Role Permissions
-Each role has specific, non-overlapping responsibilities:
-- **Admin/Creator**: Content creation and editing
-- **Reviewers**: Only approval/rejection actions
-- **No role switching during operations**: Prevents privilege escalation
-
-## Technical Architecture
-
-### Backend (Node.js + Express + MongoDB)
-
-#### Workflow Validation Utility
-- **Location**: `backend/src/utils/workflow.js`
-- **Purpose**: Centralized business logic for all workflow operations
-- **Functions**:
-  - `canCreateContent()`: Validates creation permissions
-  - `canSubmitForReview()`: Validates submission readiness
-  - `canApprove()`: Validates approval permissions
-  - `canReject()`: Validates rejection permissions
-  - `canEdit()`: Validates edit permissions
-  - `updateWorkflowState()`: Handles state transitions
-  - `getAvailableActions()`: Returns possible actions for user
-
-#### Database Schema
-```javascript
-// Content Model
-{
-  title: String,
-  body: String,
-  status: Enum['DRAFT', 'REVIEW_1', 'REVIEW_2', 'APPROVED', 'REJECTED'],
-  createdBy: String,
-  isEditable: Boolean,
-  rejectionReason: String,
-  approvedBy: [{ role: String, timestamp: Date }],
-  createdAt: Date,
-  updatedAt: Date
-}
-
-// Approval Log Model
-{
-  contentId: ObjectId,
-  stage: String,
-  action: String,
-  comment: String,
-  reviewedBy: String,
-  timestamp: Date
-}
-```
-
-#### API Endpoints
-- `POST /api/content` - Create content
-- `GET /api/content` - Get all content
-- `GET /api/content/:id` - Get specific content
-- `PUT /api/content/:id` - Update content
-- `POST /api/content/:id/submit` - Submit for review
-- `POST /api/content/:id/approve` - Approve content
-- `POST /api/content/:id/reject` - Reject content
-- `GET /api/content/:id/actions` - Get available actions
-
-### Frontend (React + TypeScript + Tailwind CSS)
-
-#### Components
-- **WorkflowProgress**: Visual workflow status indicator
-- **Role Switcher**: Mock role switching for testing
-- **Content Form**: Create/edit content interface
-- **Content List**: Display all content with actions
-- **Rejection Modal**: Comment input for rejection reasons
-
-#### State Management
-- Local React state for UI components
-- Axios for API communication
-- TypeScript interfaces for type safety
-
-## Installation and Setup
+## Setup Instructions
 
 ### Prerequisites
-- Node.js (v18 or higher)
-- MongoDB (local or cloud instance)
-- npm or yarn
+- Node.js 18+ 
+- MongoDB 4.4+
+- Git
 
-### Backend Setup
+### Local Development Setup
+
+1. **Clone the Repository**
+```bash
+git clone https://github.com/shalini0002/RedoQAssignment.git
+cd RedoQAssignment
+```
+
+2. **Backend Setup**
 ```bash
 cd backend
 npm install
-cp .env.example .env  # Configure your MongoDB URI and port
+cp .env.example .env
+# Edit .env with your MongoDB URI
 npm run dev
 ```
 
-### Frontend Setup
+3. **Frontend Setup**
 ```bash
 cd frontend
 npm install
@@ -147,107 +45,323 @@ npm run dev
 
 ### Environment Variables
 
-#### Backend (.env)
-```
+**Backend (.env)**
+```env
+NODE_ENV=development
 PORT=5001
-MONGO_URI=mongodb://localhost:27017/content-review-system
+MONGO_URI=mongodb://localhost:27017/content-review
+FRONTEND_URL=http://localhost:5173
 ```
 
-## Usage Guide
+**Frontend (.env)**
+```env
+VITE_API_URL=http://localhost:5001
+```
 
-### 1. Creating Content
-1. Switch to Admin or Creator role
-2. Fill in the content form
-3. Click "Create Content"
-4. Content starts in DRAFT status
+## Architecture Overview
 
-### 2. Submitting for Review
-1. Ensure content is in DRAFT or REJECTED status
-2. Click "Submit for Review"
-3. Content moves to REVIEW_1 status
-4. Content becomes non-editable
+### System Architecture
+```
+Frontend (React + TypeScript)
+    |
+    | HTTP/HTTPS
+    v
+Backend (Node.js + Express + MongoDB)
+    |
+    | Mongoose ODM
+    v
+Database (MongoDB)
+```
 
-### 3. Review Process
-1. Switch to appropriate reviewer role
-2. Review content in REVIEW_1 or REVIEW_2 status
-3. Choose to Approve or Reject
-4. Add rejection comments if rejecting
+### Technology Stack
+- **Frontend**: React 19, TypeScript, Vite, Tailwind CSS
+- **Backend**: Node.js, Express, MongoDB, Mongoose
+- **Deployment**: Netlify (Frontend), Render (Backend)
 
-### 4. Handling Rejections
-1. Rejected content becomes editable
-2. Update content based on feedback
-3. Resubmit for review (restarts from REVIEW_1)
+### Component Structure
+```
+frontend/src/
+|-- api/
+|   |-- content.ts          # API layer
+|-- components/
+|   |-- ContentForm.tsx     # Content creation/editing
+|   |-- ContentList.tsx      # Content display
+|   |-- RejectionModal.tsx   # Rejection reason modal
+|-- App.tsx                  # Main application component
+```
 
-### 5. Final Approval
-1. After both reviewers approve, content becomes APPROVED
-2. Content is now non-editable
-3. Workflow is complete
+### Backend Structure
+```
+backend/src/
+|-- controllers/
+|   |-- content.controller.js  # Business logic
+|-- models/
+|   |-- content.model.js       # Content schema
+|   |-- approval.model.js      # Approval log schema
+|-- routes/
+|   |-- content.routes.js      # API routes
+|-- utils/
+|   |-- workflow.js            # Workflow validation logic
+|-- server.js                   # Express server
+```
 
-## Edge Cases and Validation
+## Workflow Design
 
-### Invalid Actions Prevention
-- **Skipping approval stages**: Not allowed to jump from REVIEW_1 to APPROVED
-- **Wrong role approval**: Reviewer 1 cannot approve REVIEW_2 content
-- **Editing approved content**: Not allowed once approved
-- **Submitting non-editable content**: Not allowed when under review
+### User Roles
+- **ADMIN**: Full access, can approve any content
+- **CREATOR**: Can create and edit content
+- **REVIEWER_1**: First stage reviewer
+- **REVIEWER_2**: Second stage reviewer
 
-### Error Handling
-- **Permission denied**: Clear error messages for unauthorized actions
-- **Invalid state transitions**: Prevented at both frontend and backend
-- **Missing required fields**: Form validation before submission
-- **Network errors**: Graceful fallback and retry mechanisms
+### Content States
+```
+DRAFT -> REVIEW_1 -> REVIEW_2 -> APPROVED
+                |          |
+                v          v
+             REJECTED   REJECTED
+```
 
-## Testing the System
+### State Transitions
+- **DRAFT**: Created by Creator/Admin
+- **REVIEW_1**: Submitted by Creator/Admin, reviewed by Reviewer 1
+- **REVIEW_2**: Approved by Reviewer 1, reviewed by Reviewer 2
+- **APPROVED**: Final approved state
+- **REJECTED**: Can be edited and resubmitted
+
+### Permission Matrix
+| Role | Create | Edit | Submit | Review 1 | Review 2 | Approve |
+|------|--------|------|--------|----------|----------|---------|
+| ADMIN | Yes | Yes | Yes | Yes | Yes | Yes |
+| CREATOR | Yes | Yes | Yes | No | No | No |
+| REVIEWER_1 | No | No | No | Yes | No | No |
+| REVIEWER_2 | No | No | No | No | Yes | No |
+
+## Database Schema
+
+### Content Collection
+```javascript
+{
+  _id: ObjectId,
+  title: String,           // Content title
+  body: String,            // Content body
+  status: String,          // DRAFT | REVIEW_1 | REVIEW_2 | APPROVED | REJECTED
+  createdBy: String,      // User role who created
+  isEditable: Boolean,     // Edit permission flag
+  rejectionReason: String, // Reason for rejection
+  approvedBy: [{           // Approval history
+    role: String,
+    timestamp: Date,
+    _id: ObjectId
+  }],
+  createdAt: Date,
+  updatedAt: Date,
+  __v: Number
+}
+```
+
+### Approval Logs Collection
+```javascript
+{
+  _id: ObjectId,
+  contentId: ObjectId,    // Reference to content
+  action: String,         // APPROVE | REJECT | SUBMIT
+  performedBy: String,    // User role
+  timestamp: Date,
+  comment: String,        // Optional comment
+  metadata: Object        // Additional data
+}
+```
+
+### ER Diagram
+```
+[Content] 1--* [ApprovalLogs]
+  - _id
+  - title
+  - body
+  - status
+  - createdBy
+  - isEditable
+  - rejectionReason
+  - approvedBy[]
+  - createdAt
+  - updatedAt
+  
+[ApprovalLogs]
+  - _id
+  - contentId (FK)
+  - action
+  - performedBy
+  - timestamp
+  - comment
+  - metadata
+```
+
+## Assumptions and Tradeoffs
+
+### Assumptions
+1. **Role-based System**: Users select roles manually rather than authentication
+2. **Sequential Review**: Content must pass through Reviewer 1 before Reviewer 2
+3. **Single MongoDB Instance**: No sharding or replication considered
+4. **Simple State Management**: No complex workflow engines or BPM systems
+5. **Client-side Validation**: Frontend handles UI validation, backend enforces rules
+
+### Tradeoffs
+1. **Simplicity vs Features**: Chose simple workflow over complex branching logic
+2. **Performance vs Scalability**: Optimized for small teams, not enterprise scale
+3. **Security vs Usability**: Role selection instead of full authentication system
+4. **Real-time vs Batch**: No real-time notifications, manual refresh required
+5. **Database Choice**: MongoDB chosen for flexibility over SQL consistency
+
+### Limitations
+- No user authentication system
+- No real-time notifications
+- Limited concurrent user handling
+- No audit trail beyond approval logs
+- No file attachment support
+
+## Future Scope
+
+### Phase 2 Enhancements
+1. **Authentication System**
+   - JWT-based user authentication
+   - Role-based access control (RBAC)
+   - User profile management
+
+2. **Advanced Workflow Features**
+   - Parallel review processes
+   - Conditional routing based on content type
+   - Delegation and escalation rules
+   - Workflow templates
+
+3. **Real-time Features**
+   - WebSocket notifications
+   - Live status updates
+   - Collaborative editing
+   - Activity feeds
+
+4. **Content Management**
+   - File attachments (images, documents)
+   - Rich text editor
+   - Version control for content
+   - Content templates
+
+### Phase 3 Enterprise Features
+1. **Scalability**
+   - Database sharding
+   - Load balancing
+   - Caching layer (Redis)
+   - CDN integration
+
+2. **Analytics & Reporting**
+   - Approval time metrics
+   - User performance analytics
+   - Workflow bottleneck analysis
+   - Custom reports and dashboards
+
+3. **Integrations**
+   - Third-party authentication (OAuth, SAML)
+   - Email notification system
+   - Slack/Teams integration
+   - API for external systems
+
+4. **Security & Compliance**
+   - Audit logging
+   - Data encryption
+   - Compliance reporting
+   - Backup and disaster recovery
+
+## API Documentation
+
+### Endpoints
+
+#### Content Management
+- `GET /api/content` - Fetch all content
+- `POST /api/content` - Create new content
+- `PUT /api/content/:id` - Update content
+- `POST /api/content/:id/submit` - Submit for review
+- `POST /api/content/:id/approve` - Approve content
+- `POST /api/content/:id/reject` - Reject content
+- `GET /api/content/:id` - Get content by ID
+
+#### Request/Response Examples
+
+**Create Content**
+```javascript
+POST /api/content
+{
+  "title": "Sample Content",
+  "body": "Content description",
+  "role": "CREATOR"
+}
+
+Response:
+{
+  "_id": "64f8a1b2c3d4e5f6a7b8c9d0",
+  "title": "Sample Content",
+  "body": "Content description",
+  "status": "DRAFT",
+  "createdBy": "CREATOR",
+  "isEditable": true,
+  "approvedBy": [],
+  "createdAt": "2023-09-06T12:00:00.000Z",
+  "updatedAt": "2023-09-06T12:00:00.000Z"
+}
+```
+
+## Deployment Guide
+
+### Production Deployment
+
+**Frontend (Netlify)**
+1. Build the application: `npm run build`
+2. Deploy `dist` folder to Netlify
+3. Set environment variable: `VITE_API_URL=https://your-backend.onrender.com`
+
+**Backend (Render)**
+1. Connect GitHub repository to Render
+2. Set root directory: `backend`
+3. Set build command: `npm install`
+4. Set start command: `npm start`
+5. Configure environment variables:
+   - `NODE_ENV=production`
+   - `MONGO_URI=your-mongodb-connection-string`
+   - `FRONTEND_URL=https://your-frontend.netlify.app`
+
+### Monitoring and Maintenance
+- Monitor backend logs in Render dashboard
+- Check frontend build logs in Netlify
+- Set up error tracking (Sentry, etc.)
+- Regular database backups
+- Performance monitoring
+
+## Testing
+
+### Test Coverage
+- Unit tests for workflow logic
+- Integration tests for API endpoints
+- E2E tests for user workflows
+- Performance testing for load handling
 
 ### Test Scenarios
 1. **Happy Path**: Create content, submit, approve by both reviewers
 2. **Rejection Path**: Create content, submit, reject, edit, resubmit, approve
 3. **Permission Testing**: Try actions with wrong roles
 4. **State Validation**: Attempt invalid state transitions
+5. **Concurrent Users**: Multiple users working simultaneously
 
-### Role Testing
-- Test each role's permissions
-- Verify role switching works correctly
-- Ensure no privilege escalation
+## Contributing
 
-## Future Enhancements
-
-### Optional Features (Bonus)
-- **Sub-content support**: Parent-child content relationships
-- **Parallel approval**: Multiple reviewers at same stage
-- **Advanced permissions**: Granular role-based permissions
-- **Audit trail**: Detailed action logging
-- **Notifications**: Email/in-app notifications for status changes
-
-### Technical Improvements
-- **Authentication**: Real user authentication system
-- **Database optimization**: Indexing and query optimization
-- **Caching**: Redis for performance
-- **Testing**: Unit and integration tests
-- **CI/CD**: Automated deployment pipeline
-
-## AI Usage
-
-This system was developed with AI assistance for:
-- Code generation and optimization
-- Architecture design decisions
-- Error handling and validation logic
-- Documentation and README generation
-
-All AI-generated code was reviewed, tested, and understood by the developer before implementation.
+1. Fork the repository
+2. Create a feature branch: `git checkout -b feature/new-feature`
+3. Make your changes
+4. Add tests for new functionality
+5. Ensure all tests pass: `npm test`
+6. Submit a pull request
 
 ## License
 
 MIT License - feel free to use this system as a reference for your own content approval workflows.
 
-## Contributing
+---
 
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Test thoroughly
-5. Submit a pull request
-
-## Support
-
-For questions or issues, please refer to the code documentation or create an issue in the repository.
+**Note**: This system was developed as a demonstration of workflow management and role-based permissions. For production use, consider implementing proper authentication, security measures, and scalability features.
