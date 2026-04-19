@@ -194,6 +194,24 @@ function App() {
     return content.isEditable && (currentRole === 'ADMIN' || currentRole === 'CREATOR');
   };
 
+  const validateRoleSwitch = (newRole: UserRole) => {
+    // Check if there's content in REVIEW_1 and user is trying to switch to REVIEWER_2
+    const hasReview1Content = contents.some(content => content.status === 'REVIEW_1');
+    const hasReview2Content = contents.some(content => content.status === 'REVIEW_2');
+    
+    if (hasReview1Content && newRole === 'REVIEWER_2') {
+      alert('Wrong step! Content is waiting for Reviewer 1. Please select Reviewer 1 to proceed.');
+      return false;
+    }
+    
+    if (hasReview2Content && newRole === 'REVIEWER_1') {
+      alert('Wrong step! Content is waiting for Reviewer 2. Please select Reviewer 2 to proceed.');
+      return false;
+    }
+    
+    return true;
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 p-8">
       <div className="max-w-6xl mx-auto">
@@ -204,7 +222,12 @@ function App() {
             <label className="text-sm font-medium text-gray-700">Current Role:</label>
             <select 
               value={currentRole} 
-              onChange={(e) => setCurrentRole(e.target.value as UserRole)}
+              onChange={(e) => {
+                const newRole = e.target.value as UserRole;
+                if (validateRoleSwitch(newRole)) {
+                  setCurrentRole(newRole);
+                }
+              }}
               className="border border-gray-300 rounded-md px-3 py-2 text-sm"
             >
               <option value="ADMIN">Admin</option>
