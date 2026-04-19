@@ -11,10 +11,28 @@ const app = express();
 
 // 🔥 👉 ADD CORS HERE (VERY IMPORTANT POSITION)
 app.use(cors({
-  origin: process.env.NODE_ENV === 'production' 
-    ? [process.env.FRONTEND_URL, /\.netlify\.app$/] // Allow Netlify subdomains
-    : ["http://localhost:5173", "http://localhost:5174"], // Allow both possible frontend ports
-  methods: ["GET", "POST", "PUT", "DELETE"],
+  origin: function (origin, callback) {
+    // Allow requests with no origin (like mobile apps or curl)
+    if (!origin) return callback(null, true);
+    
+    // Allow localhost for development
+    if (origin.includes("localhost") || origin.includes("127.0.0.1")) {
+      return callback(null, true);
+    }
+    
+    // Allow Netlify domains
+    if (origin.includes(".netlify.app")) {
+      return callback(null, true);
+    }
+    
+    // Allow specific frontend URL if set
+    if (process.env.FRONTEND_URL && origin === process.env.FRONTEND_URL) {
+      return callback(null, true);
+    }
+    
+    callback(null, true); // Temporarily allow all origins for testing
+  },
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
   credentials: true
 }));
 
