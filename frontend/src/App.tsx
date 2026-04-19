@@ -1,6 +1,6 @@
 // App.tsx
 
-import './app.css';
+import './App.css';
 import './index.css';
 import { useEffect, useState } from "react";
 import { 
