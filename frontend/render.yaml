@@ -1,0 +1,10 @@
+services:
+  - type: web
+    name: frontend
+    env: static
+    buildCommand: npm run build
+    publishDir: dist
+    nodeVersion: 22
+    envVars:
+      - key: VITE_API_URL
+        value: https://redoqassignment.onrender.com
