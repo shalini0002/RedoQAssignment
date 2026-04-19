@@ -12,7 +12,7 @@ const app = express();
 // 🔥 👉 ADD CORS HERE (VERY IMPORTANT POSITION)
 app.use(cors({
   origin: process.env.NODE_ENV === 'production' 
-    ? [process.env.FRONTEND_URL] 
+    ? [process.env.FRONTEND_URL, /\.netlify\.app$/] // Allow Netlify subdomains
     : ["http://localhost:5173", "http://localhost:5174"], // Allow both possible frontend ports
   methods: ["GET", "POST", "PUT", "DELETE"],
   credentials: true
