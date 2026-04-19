@@ -1,7 +1,7 @@
 // src/api/content.ts
 import axios from "axios";
 
-const API_URL = import.meta.env.VITE_API_URL || 'https://redoqassignment.onrender.com';
+const API_URL = import.meta.env.VITE_API_URL || '/.netlify/functions/api';
 
 export interface Content {
   _id: string;
